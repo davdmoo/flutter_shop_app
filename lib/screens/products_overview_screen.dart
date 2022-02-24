@@ -1,6 +1,10 @@
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
 
+import "../screens/cart_screen.dart";
 import "../widgets/products_grid.dart";
+import "../widgets/badge.dart";
+import "../providers/cart.dart";
 
 enum FilterOptions {
   Favorites,
@@ -43,6 +47,19 @@ class _ProductsOverviewState extends State<ProductsOverview> {
                 value: FilterOptions.All,
               ),
             ],
+          ),
+          Consumer<Cart> (
+            builder:(_, cart, ch) => Badge(
+              child: ch,
+              value: cart.itemCount.toString(),
+            ),
+            // this below refers to ch -> won't rebuild because defined outside the builder
+            child: IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.of(context).pushNamed(CartScreen.routeName);
+              },
+            ),
           ),
         ],
       ),
