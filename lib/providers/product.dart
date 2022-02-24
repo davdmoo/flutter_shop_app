@@ -1,6 +1,6 @@
 import "package:flutter/foundation.dart";
 
-class Product {
+class Product with ChangeNotifier {
   final String id;
   final String name;
   final String description;
@@ -16,4 +16,10 @@ class Product {
     @required this.price,
     this.isFavorite = false,
   });
+
+  void favoriteHandler() {
+    isFavorite = !isFavorite;
+
+    notifyListeners();
+  }
 }
