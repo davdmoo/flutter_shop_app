@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import "package:http/http.dart" as http;
 
 import "./product.dart";
+import "../models/http_exception.dart";
 
 // mix-in
 class Products with ChangeNotifier {
@@ -117,20 +118,52 @@ class Products with ChangeNotifier {
     
   }
 
-  void updateProduct(String id, Product productBody) {
-    final prodIndex = _items.indexWhere((product) => product.id == id);
+  Future<void> updateProduct(String id, Product productBody) async {
+    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json");
 
-    if (prodIndex >= 0) {
-      _items[prodIndex] = productBody;
+    try {
+      final prodIndex = _items.indexWhere((product) => product.id == id);
 
-      notifyListeners();
-    }
-    
+      if (prodIndex >= 0) {
+        await http
+        .patch(
+          url,
+          body: json.encode({
+            "name": productBody.name,
+            "description": productBody.description,
+            "imageUrl": productBody.imageUrl,
+            "price": productBody.price,
+          })
+        );
+
+        _items[prodIndex] = productBody;
+
+        notifyListeners();
+      }
+    } catch (error) {
+      throw (error);
+    }  
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((product) => product.id == id);
-
+  // optimistic updating
+  Future<void> deleteProduct(String id) async {
+    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json");
+    final productIndex = _items.indexWhere((product) => product.id == id);
+    var existingProduct = _items[productIndex]; // saved in cache
+    _items.removeAt(productIndex);
     notifyListeners();
+  
+    final response = await http.delete(url);
+    if(response.statusCode >= 400) {
+      // this can be done since the product is first saved into a variable (existingProduct) / cached
+      // rerolls deleting from the list
+      _items.insert(productIndex, existingProduct);
+      notifyListeners();
+
+      throw HttpException("Something went wrong when deleting the product.");
+    }
+
+    // clears up the reference so dart can remove the product from the memory
+    existingProduct = null;
   }
 }
