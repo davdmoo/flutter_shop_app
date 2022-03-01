@@ -134,11 +134,11 @@ class _AuthCardState extends State<AuthCard> {
     try {
       if (_authMode == AuthMode.Login) {
         await Provider.of<Auth>(context, listen: false).signIn(_authData["email"], _authData["password"]);
+        // Navigator.of(context).pop();
       } else {
         await Provider.of<Auth>(context, listen: false).signUp(_authData["email"], _authData["password"]);
       }
 
-      Navigator.of(context).pushReplacementNamed(ProductsOverview.routeName);
     } on HttpException catch(error) {
       var errorMessage = "Authentication error.";
       if (error.toString().contains("EMAIL_EXISTS")) {
@@ -154,7 +154,7 @@ class _AuthCardState extends State<AuthCard> {
       _showError(errorMessage);
     } catch(error) {
       const errorMessage = "Could not authenticate. Please try again later.";
-      print(error);
+      // print(error);
 
       _showError(errorMessage);
     }

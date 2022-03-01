@@ -12,12 +12,13 @@ class UserProductsScreen extends StatelessWidget {
 
   Future<void> _refreshProducts(BuildContext context) async {
     // to avoid unnecessary products rebuild, listen to false is added
-    await Provider.of<Products>(context, listen: false).fetchProducts();
+    await Provider.of<Products>(context, listen: false).fetchProducts(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<Products>(context);
+    // final productsData = Provider.of<Products>(context);
+    print("REBUILDING..");
 
     return Scaffold(
       appBar: AppBar(
@@ -34,21 +35,28 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: MainDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => _refreshProducts(context),
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: ListView.builder(
-            itemCount: productsData.items.length,
-            itemBuilder: (_, idx) => Column(
-              children: <Widget>[
-                UserProductItem(
-                  productsData.items[idx].id,
-                  productsData.items[idx].name,
-                  productsData.items[idx].imageUrl,
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) => snapshot.connectionState == ConnectionState.waiting
+        ? Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+          onRefresh: () => _refreshProducts(context),
+          child: Consumer<Products>(
+            builder: (ctx, productsData, _) => Padding(
+              padding: EdgeInsets.all(10),
+              child: ListView.builder(
+                itemCount: productsData.items.length,
+                itemBuilder: (_, idx) => Column(
+                  children: <Widget>[
+                    UserProductItem(
+                      productsData.items[idx].id,
+                      productsData.items[idx].name,
+                      productsData.items[idx].imageUrl,
+                    ),
+                    Divider(),
+                  ],
                 ),
-                Divider(),
-              ],
+              ),
             ),
           ),
         ),
