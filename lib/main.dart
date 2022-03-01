@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         ),
         // .value is NOT preferrable here because a class is instantiated (Products())
         ChangeNotifierProxyProvider<Auth, Products>( 
-          update: (ctx, auth, previousProducts) => Products(auth.token, previousProducts == null ? [] : previousProducts.items),
+          update: (ctx, auth, previousProducts) => Products(auth.token, auth.userId, previousProducts == null ? [] : previousProducts.items),
           // create: (ctx) => Products(),
           // value: Products(),
         ),

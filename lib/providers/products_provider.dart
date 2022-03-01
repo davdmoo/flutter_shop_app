@@ -9,6 +9,7 @@ import "../models/http_exception.dart";
 // mix-in
 class Products with ChangeNotifier {
   final String authToken;
+  final String userId;
 
   List<Product> _items = [
     // Product(
@@ -45,7 +46,7 @@ class Products with ChangeNotifier {
     // ),
   ];
 
-  Products(this.authToken, this._items);
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     // if (_showFavoritesOnly) return _items.where((prod) => prod.isFavorite).toList();
@@ -64,12 +65,15 @@ class Products with ChangeNotifier {
 
   Future<void> fetchProducts() async {
     try {
-      final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken");
+      var url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken");
       final response = await http.get(url);
       final data = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> fetchedProducts = [];
 
       if (data == null) return;
+      url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/favorites/$userId.json?auth=$authToken");
+      final favoriteResponse = await http.get(url);
+      final favoriteData = json.decode(favoriteResponse.body) as Map<String, dynamic>;
 
       data.forEach((productId, productData) {
         fetchedProducts.add(Product(
@@ -78,7 +82,8 @@ class Products with ChangeNotifier {
           description: productData["description"],
           price: productData["price"],
           imageUrl: productData["imageUrl"],
-          isFavorite: productData["isFavorite"],
+          // ?? = if data is null then exp after ?? will be used
+          isFavorite: favoriteData == null ? false : favoriteData[productId] ?? false,
         ));
       });
       _items = fetchedProducts;
@@ -100,7 +105,6 @@ class Products with ChangeNotifier {
           "description": product.description,
           "imageUrl": product.imageUrl,
           "price": product.price,
-          "isFavorite": product.isFavorite,
         })
       );
         // .then((response) {
