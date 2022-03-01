@@ -25,8 +25,8 @@ class Product with ChangeNotifier {
       notifyListeners();
   }
 
-  Future<void> favoriteHandler() async {
-    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json");
+  Future<void> favoriteHandler(String authToken) async {
+    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json?auth=$authToken");
     final oldStatus = isFavorite;
 
     try {

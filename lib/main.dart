@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import "package:provider/provider.dart";
 
+import './screens/products_overview_screen.dart';
 import "./screens/auth_screen.dart";
 import "./screens/edit_products_screen.dart";
 import "./screens/product_detail_screen.dart";
@@ -23,35 +24,40 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Auth(),
         ),
         // .value is NOT preferrable here because a class is instantiated (Products())
-        ChangeNotifierProvider( 
-          create: (ctx) => Products(),
+        ChangeNotifierProxyProvider<Auth, Products>( 
+          update: (ctx, auth, previousProducts) => Products(auth.token, previousProducts == null ? [] : previousProducts.items),
+          // create: (ctx) => Products(),
           // value: Products(),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Cart(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => Orders(),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          // create: (ctx) => Orders(),
+          update: (ctx, auth, previousOrders) => Orders(auth.token, previousOrders == null ? [] : previousOrders.orders),
         ),
       ],
-      child: MaterialApp(
-        title: 'MyShop',
-        theme: ThemeData(
-          primarySwatch: Colors.deepOrange,
-          colorScheme: ThemeData().colorScheme.copyWith(
-            primary: Colors.deepOrange,
-            secondary: Colors.blue[900],
+      child: Consumer<Auth>(
+        builder: (ctx, auth, _) => MaterialApp(
+          title: 'Shopee',
+          theme: ThemeData(
+            primarySwatch: Colors.deepOrange,
+            colorScheme: ThemeData().colorScheme.copyWith(
+              primary: Colors.deepOrange,
+              secondary: Colors.blue[900],
+            ),
+            fontFamily: "Lato",
           ),
-          fontFamily: "Lato",
+          home: auth.isAuth ? ProductsOverview() : AuthScreen(),
+          routes: {
+            ProductsOverview.routeName: (ctx) => ProductsOverview(),
+            ProductDetail.routeName: (ctx) => ProductDetail(),
+            CartScreen.routeName: (ctx) => CartScreen(),
+            OrdersScreen.routeName: (ctx) => OrdersScreen(),
+            UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+            EditProductScreen.routeName: (ctx) => EditProductScreen(),
+          },
         ),
-        home: AuthScreen(),
-        routes: {
-          ProductDetail.routeName: (ctx) => ProductDetail(),
-          CartScreen.routeName: (ctx) => CartScreen(),
-          OrdersScreen.routeName: (ctx) => OrdersScreen(),
-          UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
-        },
       ),
     );
   }

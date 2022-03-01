@@ -8,6 +8,8 @@ import "../models/http_exception.dart";
 
 // mix-in
 class Products with ChangeNotifier {
+  final String authToken;
+
   List<Product> _items = [
     // Product(
     //   id: 'p1',
@@ -43,6 +45,8 @@ class Products with ChangeNotifier {
     // ),
   ];
 
+  Products(this.authToken, this._items);
+
   List<Product> get items {
     // if (_showFavoritesOnly) return _items.where((prod) => prod.isFavorite).toList();
 
@@ -53,13 +57,14 @@ class Products with ChangeNotifier {
     return _items.where((product) => product.isFavorite).toList();
   }
 
+
   Product findById(String id)  {
     return _items.firstWhere((product) => product.id == id);
   }
 
   Future<void> fetchProducts() async {
     try {
-      final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json");
+      final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken");
       final response = await http.get(url);
       final data = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> fetchedProducts = [];
@@ -86,7 +91,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     try {
-      final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json");
+      final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken");
       final response = await http
       .post(
         url,
@@ -121,7 +126,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> updateProduct(String id, Product productBody) async {
-    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json");
+    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json?auth=$authToken");
 
     try {
       final prodIndex = _items.indexWhere((product) => product.id == id);
@@ -149,7 +154,7 @@ class Products with ChangeNotifier {
 
   // optimistic updating
   Future<void> deleteProduct(String id) async {
-    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json");
+    final url = Uri.parse("https://flutter-shop-app-ef36c-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json?auth=$authToken");
     final productIndex = _items.indexWhere((product) => product.id == id);
     var existingProduct = _items[productIndex]; // saved in cache
     _items.removeAt(productIndex);
